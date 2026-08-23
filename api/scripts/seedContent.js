@@ -113,6 +113,13 @@ const SERVICES = [
   },
 ];
 
+// Titles that changed after the service list was first saved. The website and
+// the booking dropdown read titles straight from the database, so a list saved
+// under the old name keeps showing it until this runs.
+const RENAMES = {
+  'Air Duct System Installation': 'HVAC System Installation',
+};
+
 const CONTACT = {
   phone: '(469) 898-9044',
   email: 'pacificduct021@gmail.com',
@@ -121,7 +128,8 @@ const CONTACT = {
 
 async function run() {
   if (!process.env.MONGODB_URI) {
-    console.error('MONGODB_URI is not set in api/.env');
+    console.error('MONGODB_URI is not set. Pass it inline to target another database:');
+    console.error('  MONGODB_URI="<uri>" node api/scripts/seedContent.js');
     process.exit(1);
   }
 
@@ -138,20 +146,30 @@ async function run() {
     content.services = SERVICES;
     console.log(`Seeded ${SERVICES.length} services`);
   } else {
-    // Fill in the category on services saved before categories existed
-    let updated = 0;
+    // Bring a service list saved before categories existed up to date, without
+    // touching prices or descriptions the admin may have edited.
+    const renamed = [];
+    const categorised = [];
+
     content.services.forEach((service) => {
-      if (!service.category) {
-        const known = SERVICES.find((s) => s.title === service.title);
-        service.category = known ? known.category : 'Cleaning';
-        updated += 1;
+      const newTitle = RENAMES[service.title];
+      if (newTitle) {
+        renamed.push(`${service.title} -> ${newTitle}`);
+        service.title = newTitle;
+      }
+
+      const known = SERVICES.find((s) => s.title === service.title);
+      const category = known ? known.category : service.category || 'Cleaning';
+      if (service.category !== category) {
+        categorised.push(`${service.title}: ${service.category || '(none)'} -> ${category}`);
+        service.category = category;
       }
     });
-    console.log(
-      updated
-        ? `Kept ${content.services.length} existing services, set category on ${updated}`
-        : `Kept ${content.services.length} existing services`,
-    );
+
+    console.log(`Kept ${content.services.length} existing services`);
+    renamed.forEach((line) => console.log('  renamed  ', line));
+    categorised.forEach((line) => console.log('  category ', line));
+    if (!renamed.length && !categorised.length) console.log('  already up to date');
   }
 
   if (!content.contact || !content.contact.phone) {
