@@ -104,14 +104,43 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Email configuration
-const transporter = nodemailer.createTransport({
-  service: 'gmail', // You can use other services like 'outlook', 'yahoo', etc.
-  auth: {
-    user: process.env.EMAIL_USER, // Your email
-    pass: process.env.EMAIL_PASS  // Your email password or app password
-  }
-});
+// Email configuration.
+// Set EMAIL_HOST to send through your own mailbox (e.g. smtp.hostinger.com for
+// info@pacificductpros.com). Without it we fall back to Gmail, which is how
+// this ran before the domain mailbox existed.
+const transporter = nodemailer.createTransport(
+  process.env.EMAIL_HOST
+    ? {
+        host: process.env.EMAIL_HOST,
+        port: Number(process.env.EMAIL_PORT) || 465,
+        // Port 465 is implicit TLS; 587 upgrades with STARTTLS instead.
+        secure: (Number(process.env.EMAIL_PORT) || 465) === 465,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        }
+      }
+    : {
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        }
+      }
+);
+
+// Mailboxes reject a From address they do not own, so this must stay the
+// authenticated account. The name is what the customer sees in their inbox.
+const MAIL_FROM = process.env.EMAIL_FROM || `"Pacific Duct Systems" <${process.env.EMAIL_USER}>`;
+
+// Check the mailbox credentials on startup locally. Skipped on Vercel, where
+// this would open an SMTP connection on every cold start.
+if (require.main === module) {
+  transporter.verify((err) => {
+    if (err) console.error('❌ Email transport not ready:', err.message);
+    else console.log(`✅ Email ready, sending as ${MAIL_FROM}`);
+  });
+}
 
   // Test route
 app.get('/api/test', (req, res) => {
@@ -293,7 +322,7 @@ app.post('/api/submit-booking', async (req, res) => {
 
     // Email content for admin
     const adminMailOptions = {
-      from: process.env.EMAIL_USER,
+      from: MAIL_FROM,
       to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
       subject: '🎯 New Booking Request - Pacific Duct Systems',
       html: `
@@ -365,7 +394,7 @@ app.post('/api/submit-booking', async (req, res) => {
 
     // Email content for customer (confirmation)
     const customerMailOptions = {
-      from: process.env.EMAIL_USER,
+      from: MAIL_FROM,
       to: email,
       subject: '📋 Booking Received - Pacific Duct Systems',
       html: `
@@ -519,7 +548,7 @@ app.patch('/api/bookings/:id/schedule', requireAdmin, async (req, res) => {
 
     try {
       await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+        from: MAIL_FROM,
         to: booking.email,
         subject: '📅 Your Visit is Scheduled - Pacific Duct Systems',
         html: `
