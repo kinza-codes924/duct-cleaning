@@ -19,6 +19,11 @@
     "#site-footer *{box-sizing:border-box}",
     "#site-footer .sf-wrap{max-width:1280px;margin:0 auto;padding:0 16px;position:relative;z-index:10}",
     "@media(min-width:768px){#site-footer .sf-wrap{padding:0 32px}}",
+    "#site-footer .sf-brand{display:flex;align-items:center;gap:14px;padding-bottom:28px;margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,.1)}",
+    "#site-footer .sf-brand img{height:52px;width:auto;object-fit:contain;flex-shrink:0}",
+    "#site-footer .sf-brand-name{margin:0;color:#fff;font-size:17px;font-weight:700;letter-spacing:.01em}",
+    "#site-footer .sf-brand-tag{margin:2px 0 0;color:rgba(255,255,255,.45);font-size:13px}",
+    "@media(min-width:768px){#site-footer .sf-brand img{height:64px}#site-footer .sf-brand-name{font-size:19px}}",
     "#site-footer .sf-grid{display:grid;grid-template-columns:1fr;gap:32px}",
     "@media(min-width:640px){#site-footer .sf-grid{grid-template-columns:repeat(3,1fr);gap:40px}}",
     "#site-footer h4{margin:0 0 12px;font-size:12px;line-height:1.4;color:#7df4ff;text-transform:uppercase;letter-spacing:.1em;font-weight:600}",
@@ -55,6 +60,11 @@
     '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h1.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>';
 
   var HTML =
+    '<div class="sf-wrap sf-brand">' +
+    '<img src="pacific_logo_without_bg.png" alt="Pacific Duct Systems logo" />' +
+    '<div><p class="sf-brand-name">Pacific Duct Systems</p>' +
+    '<p class="sf-brand-tag">Hospital-grade air duct cleaning &amp; installation</p></div>' +
+    '</div>' +
     '<div class="sf-wrap sf-grid">' +
     "<div><h4>Company</h4><ul>" +
     '<li><a href="' + home + '#why-us">About Us</a></li>' +
