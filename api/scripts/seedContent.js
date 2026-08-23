@@ -9,6 +9,12 @@
  */
 require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
 const mongoose = require('mongoose');
+
+// The connection string in api/.env has no database name, so it lands in the
+// cluster's default database. The live site uses "ductCleaning". Set MONGODB_DB
+// to work against it without pasting a second connection string:
+//   $env:MONGODB_DB="ductCleaning"; node api/scripts/seedContent.js ...
+const DB_NAME = process.env.MONGODB_DB || undefined;
 const Content = require('../models/Content');
 
 const SERVICES = [
@@ -137,7 +143,7 @@ async function run() {
     process.exit(1);
   }
 
-  await mongoose.connect(process.env.MONGODB_URI);
+  await mongoose.connect(process.env.MONGODB_URI, { dbName: DB_NAME });
   console.log('Connected to MongoDB');
 
   let content = await Content.findOne({ key: 'site' });
