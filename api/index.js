@@ -94,11 +94,14 @@ async function ensureDefaultAdmin() {
       );
     }
 
-    const existing = await Admin.findOne({ username: DEFAULT_ADMIN_USERNAME });
-    if (!existing) {
+    // Only seed when there is no admin at all. Once a real account exists the
+    // starter one can be deleted for good; recreating it would quietly reopen
+    // the login whose password is published in this file.
+    const adminCount = await Admin.countDocuments();
+    if (adminCount === 0) {
       const passwordHash = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, 10);
       await Admin.create({ username: DEFAULT_ADMIN_USERNAME, passwordHash });
-      console.log(`✅ Admin account created: ${DEFAULT_ADMIN_USERNAME}`);
+      console.log(`✅ First admin account created: ${DEFAULT_ADMIN_USERNAME}`);
     }
   } catch (err) {
     console.error('❌ Failed to ensure default admin:', err.message);
