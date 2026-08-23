@@ -66,9 +66,9 @@
     '<li><a href="faq.html">FAQ</a></li>' +
     "</ul></div>" +
     '<div><h4>Contact</h4><div class="sf-contact">' +
-    '<a id="cms-contact-email" href="mailto:pacificduct021@gmail.com">' +
+    '<a id="cms-contact-email" href="mailto:info@pacificductpros.com">' +
     MAIL_ICON +
-    "<span data-cms-text>pacificduct021@gmail.com</span></a>" +
+    "<span data-cms-text>info@pacificductpros.com</span></a>" +
     '<a id="cms-contact-phone" href="tel:+14698989044">' +
     PHONE_ICON +
     "<span data-cms-text>(469) 898-9044</span></a>" +

@@ -232,7 +232,7 @@ app.put('/api/content', requireAdmin, async (req, res) => {
 app.get('/api/bookings/:id/public', async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id).select(
-      'name service address city state zipCode status submittedAt scheduledDate'
+      'name service address city state zipCode status submittedAt scheduledDate payment'
     );
     if (!booking) {
       return res.status(404).json({ success: false, message: 'Booking not found' });
@@ -596,6 +596,109 @@ app.patch('/api/bookings/:id/schedule', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error scheduling booking:', error);
     res.status(500).json({ success: false, message: 'Failed to schedule booking' });
+  }
+});
+
+// Admin: record a payment (or undo one). Marking a booking paid turns its
+// invoice into a receipt and emails the customer a confirmation.
+app.patch('/api/bookings/:id/payment', requireAdmin, async (req, res) => {
+  try {
+    const { amount, method, note, unpaid } = req.body;
+
+    if (unpaid) {
+      const booking = await Booking.findByIdAndUpdate(
+        req.params.id,
+        { payment: { status: 'unpaid', amount: null, method: null, paidAt: null, note: '' } },
+        { new: true }
+      );
+      if (!booking) {
+        return res.status(404).json({ success: false, message: 'Booking not found' });
+      }
+      return res.json({ success: true, message: 'Payment cleared', booking });
+    }
+
+    const value = Number(amount);
+    if (!isFinite(value) || value <= 0) {
+      return res.status(400).json({ success: false, message: 'A payment amount is required' });
+    }
+
+    const ALLOWED_METHODS = ['cash', 'card', 'bank', 'other'];
+    const paymentMethod = ALLOWED_METHODS.includes(method) ? method : 'other';
+
+    const booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      {
+        payment: {
+          status: 'paid',
+          amount: value,
+          method: paymentMethod,
+          paidAt: new Date(),
+          note: (note || '').trim()
+        }
+      },
+      { new: true }
+    );
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    const siteUrl = allowedOrigins[0] || '';
+    const receiptLink = siteUrl ? `${siteUrl}/paid_invoice.html?id=${booking._id}` : '';
+    const formattedAmount = `$${value.toFixed(2)}`;
+    const METHOD_LABELS = { cash: 'Cash', card: 'Card', bank: 'Bank transfer', other: 'Other' };
+
+    try {
+      await transporter.sendMail({
+        from: MAIL_FROM,
+        to: booking.email,
+        subject: 'Payment received - Pacific Duct Systems',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #003366 0%, #001e40 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+              .amount-badge { background: #1facb6; color: white; padding: 16px; border-radius: 8px; text-align: center; margin: 20px 0; font-size: 22px; font-weight: bold; }
+              .button { display: inline-block; padding: 12px 30px; background: #003366; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+              .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Payment Received</h1>
+                <p>Pacific Duct Systems</p>
+              </div>
+              <div class="content">
+                <p>Hello ${booking.name},</p>
+                <p>Thank you — we have received your payment for <strong>${booking.service}</strong>.</p>
+                <div class="amount-badge">${formattedAmount} paid</div>
+                <p><strong>Payment method:</strong> ${METHOD_LABELS[paymentMethod]}<br>
+                <strong>Service address:</strong><br>${booking.address}<br>${booking.city}, ${booking.state} ${booking.zipCode}</p>
+                ${receiptLink ? `<p style="text-align:center;"><a class="button" href="${receiptLink}">View Your Receipt</a></p>` : ''}
+                <p>Please keep this email for your records. If anything looks wrong, just reply and we will sort it out.</p>
+              </div>
+              <div class="footer">
+                <p>Pacific Duct Systems - Elite Air Purification</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+      });
+      console.log('✅ Receipt email sent to', booking.email);
+    } catch (emailError) {
+      console.error('⚠️ Payment recorded but email failed to send:', emailError.message);
+    }
+
+    res.json({ success: true, message: 'Payment recorded and customer notified', booking });
+  } catch (error) {
+    console.error('Error recording payment:', error);
+    res.status(500).json({ success: false, message: 'Failed to record payment' });
   }
 });
 

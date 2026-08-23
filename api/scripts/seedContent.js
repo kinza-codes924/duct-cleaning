@@ -120,9 +120,13 @@ const RENAMES = {
   'Air Duct System Installation': 'HVAC System Installation',
 };
 
+// Addresses the site used before the domain mailbox existed; a saved contact
+// still holding one of these gets moved to the new address.
+const OLD_EMAILS = ['pacificduct021@gmail.com'];
+
 const CONTACT = {
   phone: '(469) 898-9044',
-  email: 'pacificduct021@gmail.com',
+  email: 'info@pacificductpros.com',
   address: '',
 };
 
@@ -172,10 +176,17 @@ async function run() {
     if (!renamed.length && !categorised.length) console.log('  already up to date');
   }
 
-  if (!content.contact || !content.contact.phone) {
-    content.contact = { ...CONTACT, ...(content.contact || {}) , phone: CONTACT.phone };
+  if (!content.contact) content.contact = {};
+  if (!content.contact.phone) content.contact.phone = CONTACT.phone;
+
+  // The site now sends from the domain mailbox, so the address shown to
+  // customers should match it rather than the Gmail account it replaced.
+  if (!content.contact.email || OLD_EMAILS.includes(content.contact.email)) {
+    if (content.contact.email && content.contact.email !== CONTACT.email) {
+      console.log(`  email    ${content.contact.email} -> ${CONTACT.email}`);
+    }
+    content.contact.email = CONTACT.email;
   }
-  if (!content.contact.email) content.contact.email = CONTACT.email;
   console.log(`Contact: ${content.contact.phone} / ${content.contact.email}`);
 
   await content.save();

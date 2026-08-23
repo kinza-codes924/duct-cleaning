@@ -70,7 +70,7 @@
 <h1 class="font-headline-md text-headline-md text-primary tracking-tight">Pacific Duct</h1>
 </div>
 <div class="space-y-1">
-<p class="text-on-surface-variant font-label-md uppercase tracking-wider">Service Invoice</p>
+<p id="doc-label" class="text-on-surface-variant font-label-md uppercase tracking-wider">Service Invoice</p>
 <p id="invoice-id" class="font-headline-md text-primary">—</p>
 <p class="text-body-md text-on-surface-variant">Booking ID: <span id="booking-ref" class="font-bold text-on-surface">—</span></p>
 </div>
@@ -101,6 +101,10 @@
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-on-tertiary-container" data-icon="event_available">event_available</span>
 <p class="text-body-md text-on-surface">Visit: <span id="visit-date">To be confirmed</span></p>
+</div>
+<div id="payment-row" class="flex items-center gap-2" style="display:none">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="payments">payments</span>
+<p class="text-body-md text-on-surface"><span id="payment-method">—</span> on <span id="paid-date">—</span></p>
 </div>
 </div>
 </div>
@@ -155,7 +159,7 @@
 <span>$0.00</span>
 </div>
 <div class="flex justify-between items-center pt-2">
-<span class="font-headline-md text-primary">Estimated Total</span>
+<span id="total-label" class="font-headline-md text-primary">Estimated Total</span>
 <span id="total-paid" class="font-headline-md text-on-tertiary-container">—</span>
 </div>
 <div class="h-1 bg-gradient-to-r from-primary to-on-tertiary-container rounded-full mt-2"></div>
@@ -164,9 +168,9 @@
 <!-- Bottom Note -->
 <div class="mt-stack-lg pt-stack-md border-t border-outline-variant">
 <p class="text-on-surface-variant text-sm italic mb-4">
-                    This invoice summarises the service you booked with Pacific Duct Systems. Pricing shown is our
+<span id="doc-note">This invoice summarises the service you booked with Pacific Duct Systems. Pricing shown is our
                     standard starting rate; the final amount is confirmed after our technician assesses the property
-                    on site. Payment is collected at the time of service.
+                    on site. Payment is collected at the time of service.</span>
                 </p>
 <div class="flex justify-between items-center text-on-surface-variant font-label-md text-[12px]">
 <div class="flex gap-4">
@@ -244,20 +248,45 @@
       setText('booked-date', formatDate(booking.submittedAt, true) || '\u2014');
       setText('visit-date', formatDate(booking.scheduledDate, false) || 'To be confirmed');
 
-      // Status stamp reflects the real booking status
+      // Once a payment is recorded this document becomes a receipt; until then
+      // the stamp shows where the booking actually stands.
+      const payment = booking.payment || {};
+      const isPaid = payment.status === 'paid';
+
       const STATUS_LABELS = {
         pending: 'PENDING',
         confirmed: 'CONFIRMED',
         completed: 'COMPLETED',
         cancelled: 'CANCELLED',
       };
-      setText('status-stamp-text', STATUS_LABELS[booking.status] || booking.status.toUpperCase());
+      setText(
+        'status-stamp-text',
+        isPaid ? 'PAID' : STATUS_LABELS[booking.status] || booking.status.toUpperCase(),
+      );
 
-      // Price comes from the published service list; "Custom" stays a quote
-      const rawPrice = servicePrices[booking.service] || '';
-      const numeric = parseFloat(String(rawPrice).replace(/[^0-9.]/g, ''));
-      const hasPrice = !isNaN(numeric) && numeric > 0;
-      const amount = hasPrice ? `$${numeric.toFixed(2)}` : 'Quote on request';
+      if (isPaid) {
+        const METHOD_LABELS = { cash: 'Paid in cash', card: 'Paid by card', bank: 'Paid by bank transfer', other: 'Paid' };
+        setText('doc-label', 'Payment Receipt');
+        setText('total-label', 'Total Paid');
+        setText('payment-method', METHOD_LABELS[payment.method] || 'Paid');
+        setText('paid-date', formatDate(payment.paidAt, false) || '—');
+        document.getElementById('payment-row').style.display = '';
+        setText(
+          'doc-note',
+          'This receipt confirms payment received by Pacific Duct Systems for the service listed above. ' +
+            'Please keep it for your records.',
+        );
+      }
+
+      // A recorded payment is the real figure; otherwise show the list price
+      let amount;
+      if (isPaid && typeof payment.amount === 'number') {
+        amount = `$${payment.amount.toFixed(2)}`;
+      } else {
+        const rawPrice = servicePrices[booking.service] || '';
+        const numeric = parseFloat(String(rawPrice).replace(/[^0-9.]/g, ''));
+        amount = !isNaN(numeric) && numeric > 0 ? `$${numeric.toFixed(2)}` : 'Quote on request';
+      }
 
       document.getElementById('service-details').innerHTML = `
         <tr>

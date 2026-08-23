@@ -60,6 +60,33 @@ const bookingSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  payment: {
+    // Recorded by admin once the customer has paid, usually on site after the
+    // job. Until then the invoice stays an estimate rather than a receipt.
+    status: {
+      type: String,
+      enum: ['unpaid', 'paid'],
+      default: 'unpaid'
+    },
+    amount: {
+      type: Number,
+      default: null
+    },
+    method: {
+      type: String,
+      enum: ['cash', 'card', 'bank', 'other', null],
+      default: null
+    },
+    paidAt: {
+      type: Date,
+      default: null
+    },
+    note: {
+      type: String,
+      trim: true,
+      default: ''
+    }
+  },
   submittedAt: {
     type: Date,
     default: Date.now
