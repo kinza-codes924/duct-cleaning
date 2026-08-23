@@ -38,7 +38,12 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// app.use(express.static('public')); // Frontend is deployed separately
+// On Vercel the pages in /public are served by the platform, so the frontend is
+// deployed separately. Locally we serve them from this same server (before the
+// database-wait middleware, so pages still load when MongoDB is unreachable).
+if (require.main === module) {
+  app.use(express.static(require('path').resolve(__dirname, '..', 'public')));
+}
 
 // Default admin login (hardcoded as requested)
 const DEFAULT_ADMIN_USERNAME = 'admin@pacific.duct';
@@ -74,6 +79,9 @@ if (!cachedConnection) {
       global._mongooseConnection = null;
       throw err;
     });
+  // Keep the rejection from crashing the process as an unhandled rejection; the
+  // request middleware below awaits the same promise and turns it into a 503.
+  cachedConnection.catch(() => {});
 }
 
 // Make sure every request waits for the connection before hitting a route
@@ -556,7 +564,8 @@ module.exports = app;
 
 // If this file is run directly, start the server for local development
 if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
+  // The pages call http://localhost:4000/api during local development.
+  const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
     console.log(`🚀 Server is running for local development on http://localhost:${PORT}`);
   });

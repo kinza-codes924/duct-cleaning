@@ -1,4 +1,11 @@
 {
+  "name": "pacific-duct-systems",
+  "private": true,
+  "scripts": {
+    "dev": "node api/index.js",
+    "start": "node api/index.js",
+    "setup": "npm install --prefix api"
+  },
   "dependencies": {
     "mongodb": "^7.2.0"
   }
