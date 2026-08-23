@@ -22,20 +22,52 @@ const allowedOrigins = (process.env.FRONTEND_URL || '')
   .map((url) => url.trim().replace(/\/$/, ''))
   .filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (curl, server-to-server) and local dev (file://, localhost)
-    if (!origin || origin === 'null' || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-      return callback(null, true);
-    }
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    callback(new Error('Not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+function isAllowedOrigin(origin, req) {
+  // No origin at all: curl, server-to-server, or a page opened from file://
+  if (!origin || origin === 'null') return true;
+  if (LOCAL_ORIGIN.test(origin)) return true;
+  if (allowedOrigins.includes(origin)) return true;
+
+  // The pages and this API are served by the same deployment, so a request from
+  // the very host that served the page is this site talking to itself. Without
+  // this, the site breaks on any address FRONTEND_URL does not list — the
+  // www/non-www twin, or a Vercel preview URL.
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  try {
+    return Boolean(host) && new URL(origin).host === host;
+  } catch (err) {
+    return false;
+  }
+}
+
+app.use(
+  cors((req, callback) => {
+    const origin = req.headers.origin;
+    callback(
+      isAllowedOrigin(origin, req) ? null : new Error('Not allowed by CORS'),
+      {
+        origin: origin || true,
+        methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization']
+      }
+    );
+  })
+);
+
+// A blocked origin used to surface as a 500, which reads like the server is
+// broken. Say what actually happened instead.
+app.use((err, req, res, next) => {
+  if (err && err.message === 'Not allowed by CORS') {
+    console.warn('Blocked cross-origin request from', req.headers.origin);
+    return res.status(403).json({
+      success: false,
+      message: 'This website address is not allowed to use the booking API.'
+    });
+  }
+  next(err);
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
