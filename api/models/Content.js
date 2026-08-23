@@ -18,6 +18,8 @@ const contentSchema = new mongoose.Schema({
   },
   services: [{
     title: { type: String, required: true },
+    // Groups the service under a tab on the website (e.g. Cleaning, Installation)
+    category: { type: String, default: 'Cleaning', trim: true },
     description: { type: String, default: '' },
     icon: { type: String, default: '' },
     price: { type: String, default: '' },

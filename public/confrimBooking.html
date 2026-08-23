@@ -4,6 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Booking Confirmation | Pacific Duct Systems</title>
+    <meta name="description" content="Your Pacific Duct Systems booking details and what to prepare before the visit."/>
+    <link rel="icon" type="image/png" href="pacific_logo_without_bg.png"/>
+    <meta name="robots" content="noindex"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
@@ -399,6 +403,25 @@
           </li>
         </ul>
       </section>
+      <!-- Document links -->
+      <section class="mt-stack-sm flex flex-wrap gap-3">
+        <a
+          id="invoice-link"
+          href="#"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white font-label-md text-label-md hover:bg-primary-container transition-colors"
+        >
+          <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+          View Invoice
+        </a>
+        <a
+          id="completion-link"
+          href="#"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container transition-colors"
+        >
+          <span class="material-symbols-outlined text-[18px]">description</span>
+          Service Report
+        </a>
+      </section>
       <!-- Section 5: Support & Verification -->
       <section
         class="mt-auto pt-stack-sm border-t border-outline-variant/20 flex justify-between items-end"
@@ -409,10 +432,10 @@
               CONTACT SUPPORT
             </p>
             <p class="font-body-md text-body-md text-on-surface font-medium">
-              support@Pacific Ductsystems.com
+              pacificduct021@gmail.com
             </p>
             <p class="font-body-md text-body-md text-on-surface font-medium">
-              (555) 012-3456
+              (469) 898-9044
             </p>
           </div>
           <div
@@ -529,10 +552,10 @@
                     `;
               serviceList.appendChild(serviceItem);
 
-              document.getElementById("invoice-link").href =
-                `paid_invoice.html?id=${booking._id}`;
-              document.getElementById("completion-link").href =
-                `service_completion.html?id=${booking._id}`;
+              const invoiceLink = document.getElementById("invoice-link");
+              if (invoiceLink) invoiceLink.href = `paid_invoice.html?id=${booking._id}`;
+              const completionLink = document.getElementById("completion-link");
+              if (completionLink) completionLink.href = `service_completion.html?id=${booking._id}`;
 
               // QR code section is currently commented out in the markup above
               const qrCodeContainer = document.getElementById("qrcode");

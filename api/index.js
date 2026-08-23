@@ -45,17 +45,27 @@ if (require.main === module) {
   app.use(express.static(require('path').resolve(__dirname, '..', 'public')));
 }
 
-// Default admin login (hardcoded as requested)
-const DEFAULT_ADMIN_USERNAME = 'admin@pacific.duct';
-const DEFAULT_ADMIN_PASSWORD = '12345678';
+// First-run admin login. Set ADMIN_USERNAME / ADMIN_PASSWORD in the environment:
+// the fallback below is public knowledge (it lives in this file) and anyone who
+// knows it can read every customer's contact details, so it must be replaced
+// before the site handles real bookings.
+const DEFAULT_ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin@pacific.duct';
+const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '12345678';
 
 async function ensureDefaultAdmin() {
   try {
+    if (!process.env.ADMIN_PASSWORD) {
+      console.warn(
+        '⚠️  ADMIN_PASSWORD is not set — falling back to the password committed in this file. ' +
+          'Set ADMIN_USERNAME/ADMIN_PASSWORD, or run: node api/scripts/createAdmin.js <username> <password>'
+      );
+    }
+
     const existing = await Admin.findOne({ username: DEFAULT_ADMIN_USERNAME });
     if (!existing) {
       const passwordHash = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, 10);
       await Admin.create({ username: DEFAULT_ADMIN_USERNAME, passwordHash });
-      console.log(`✅ Default admin created: ${DEFAULT_ADMIN_USERNAME}`);
+      console.log(`✅ Admin account created: ${DEFAULT_ADMIN_USERNAME}`);
     }
   } catch (err) {
     console.error('❌ Failed to ensure default admin:', err.message);

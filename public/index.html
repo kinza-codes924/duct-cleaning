@@ -5,7 +5,19 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Pacific Duct Systems | Premium Air Duct Cleaning</title>
-    <link rel="icon" type="image/png" href="pacific_logo_without_bg.png" />
+    <meta name="description" content="Professional air duct, dryer vent, furnace and chimney cleaning, plus HVAC and AC system installation. Book your service online with Pacific Duct Systems."/>
+    <link rel="icon" type="image/png" href="pacific_logo_without_bg.png"/>
+    <link rel="canonical" href="https://duct-cleaning-six.vercel.app/"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:site_name" content="Pacific Duct Systems"/>
+    <meta property="og:title" content="Pacific Duct Systems | Premium Air Duct Cleaning"/>
+    <meta property="og:description" content="Professional air duct, dryer vent, furnace and chimney cleaning, plus HVAC and AC system installation. Book your service online with Pacific Duct Systems."/>
+    <meta property="og:url" content="https://duct-cleaning-six.vercel.app/"/>
+    <meta property="og:image" content="https://duct-cleaning-six.vercel.app/pacific_logo_without_bg.png"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="Pacific Duct Systems | Premium Air Duct Cleaning"/>
+    <meta name="twitter:description" content="Professional air duct, dryer vent, furnace and chimney cleaning, plus HVAC and AC system installation. Book your service online with Pacific Duct Systems."/>
+    <meta name="twitter:image" content="https://duct-cleaning-six.vercel.app/pacific_logo_without_bg.png"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap"
@@ -1385,6 +1397,57 @@
       }
 
       /* Feature carousel (services) */
+      .fc-category-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 9999px;
+        border: 1px solid rgba(115, 119, 128, 0.35);
+        background: transparent;
+        color: #43474f;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition:
+          background 0.3s ease,
+          color 0.3s ease,
+          border-color 0.3s ease,
+          box-shadow 0.3s ease,
+          transform 0.3s ease;
+      }
+      .fc-category-tab .material-symbols-outlined {
+        font-size: 18px;
+      }
+      .fc-category-tab:hover {
+        border-color: #1facb6;
+        color: #001e40;
+      }
+      .fc-category-tab.active {
+        background: linear-gradient(135deg, #003366, #001e40);
+        border-color: transparent;
+        color: #ffffff;
+        box-shadow: 0 8px 20px rgba(0, 30, 64, 0.25);
+        transform: translateY(-1px);
+      }
+      .fc-category-tab .fc-tab-count {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 9999px;
+        background: rgba(0, 30, 64, 0.1);
+        color: inherit;
+      }
+      .fc-category-tab.active .fc-tab-count {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      @media (max-width: 480px) {
+        .fc-category-tab {
+          padding: 8px 14px;
+          font-size: 13px;
+        }
+      }
       #fc-chip-stack {
         position: relative;
       }
@@ -1985,6 +2048,43 @@
         })();
 
 
+        // Rebuild the booking dropdown from the live service list, grouped by
+        // category, so a service added in the CMS is bookable straight away.
+        function syncBookingServiceOptions(services) {
+          const select = document.querySelector(
+            '#booking-form select[name="service"]',
+          );
+          if (!select || !Array.isArray(services) || !services.length) return;
+
+          const previous = select.value;
+          select.innerHTML = '<option value="">Select a service...</option>';
+
+          const groups = new Map();
+          services.forEach((service) => {
+            const category = service.category || "Cleaning";
+            if (!groups.has(category)) groups.set(category, []);
+            groups.get(category).push(service);
+          });
+
+          groups.forEach((items, category) => {
+            const parent =
+              groups.size > 1
+                ? Object.assign(document.createElement("optgroup"), {
+                    label: category,
+                  })
+                : select;
+            items.forEach((service) => {
+              const option = document.createElement("option");
+              option.value = service.label;
+              option.textContent = service.label;
+              parent.appendChild(option);
+            });
+            if (parent !== select) select.appendChild(parent);
+          });
+
+          if (previous) select.value = previous;
+        }
+
         // Feature carousel (services)
         (async function initFeatureCarousel() {
           const chipStack = document.getElementById("fc-chip-stack");
@@ -1995,6 +2095,7 @@
             {
               icon: "air",
               label: "Air Duct Cleaning",
+              category: "Cleaning",
               desc: "Complete cleaning of your HVAC air ducts to remove dust, debris, and allergens for improved air quality.",
               price: "$199",
               priceLabel: "Starting from",
@@ -2004,6 +2105,7 @@
             {
               icon: "dry",
               label: "Dryer Vent Cleaning",
+              category: "Cleaning",
               desc: "Professional dryer vent cleaning to prevent fire hazards and improve dryer efficiency.",
               price: "$150",
               priceLabel: "Starting from",
@@ -2013,6 +2115,7 @@
             {
               icon: "mode_fan",
               label: "Air Vent Cleaning",
+              category: "Cleaning",
               desc: "Thorough cleaning of air vents and registers to ensure optimal airflow throughout your space.",
               price: "$199",
               priceLabel: "Starting from",
@@ -2022,6 +2125,7 @@
             {
               icon: "cleaning_services",
               label: "Deep Air Vent Cleaning",
+              category: "Cleaning",
               desc: "Intensive deep cleaning service for heavily soiled vents and hard-to-reach areas.",
               price: "$499",
               priceLabel: "Starting from",
@@ -2031,6 +2135,7 @@
             {
               icon: "hvac",
               label: "Furnace Cleaning",
+              category: "Cleaning",
               desc: "Complete furnace cleaning and maintenance to ensure efficient heating and clean air circulation.",
               price: "$199",
               priceLabel: "Starting from",
@@ -2040,6 +2145,7 @@
             {
               icon: "fireplace",
               label: "Chimney Cleaning",
+              category: "Cleaning",
               desc: "Complete chimney cleaning and maintenance for safe airflow and a clean, smoke-free home.",
               price: "$199",
               priceLabel: "Starting from",
@@ -2047,17 +2153,19 @@
               gradient: "linear-gradient(135deg, #003366, #002326)",
             },
             {
-              icon: "contact_support",
-              label: "Air Duct System Installation",
-              desc: "Professional air duct system installation tailored to your space, engineered for proper airflow, improved ventilation, and maximum energy efficiency.",
+              icon: "heat_pump",
+              label: "HVAC System Installation",
+              category: "Installation",
+              desc: "Complete HVAC and air duct system installation tailored to your space, engineered for proper airflow, improved ventilation, and maximum energy efficiency.",
               price: "Custom",
               priceLabel: "Quote",
               cta: "Contact Us",
               gradient: "linear-gradient(135deg, #1f477b, #001e40)",
             },
             {
-              icon: "contact_support",
+              icon: "ac_unit",
               label: "AC System Installation",
+              category: "Installation",
               desc: "Professional setup of air conditioning systems for efficient cooling, proper airflow, and long-lasting performance.",
               price: "Custom",
               priceLabel: "Quote",
@@ -2065,8 +2173,9 @@
               gradient: "linear-gradient(135deg, #003366, #1facb6)",
             },
             {
-              icon: "contact_support",
+              icon: "design_services",
               label: "Custom Solutions",
+              category: "Installation",
               desc: "Have a unique requirement? Our team designs custom air quality solutions built around your exact space and needs.",
               price: "Custom",
               priceLabel: "Quote",
@@ -2086,7 +2195,7 @@
             "linear-gradient(135deg, #003366, #1facb6)",
           ];
 
-          let SERVICES = DEFAULT_SERVICES;
+          let ALL_SERVICES = DEFAULT_SERVICES;
           try {
             const cmsApiBase =
               location.protocol === "file:" || location.hostname === "localhost" || location.hostname === "127.0.0.1"
@@ -2095,9 +2204,10 @@
             const res = await fetch(`${cmsApiBase}/content`);
             const data = await res.json();
             if (data.success && Array.isArray(data.content.services) && data.content.services.length) {
-              SERVICES = data.content.services.map((s, i) => ({
+              ALL_SERVICES = data.content.services.map((s, i) => ({
                 icon: s.icon || "design_services",
                 label: s.title,
+                category: s.category || "Cleaning",
                 desc: s.description || "",
                 price: s.price || "Custom",
                 priceLabel: s.priceLabel || "Starting from",
@@ -2109,23 +2219,38 @@
             console.warn("CMS services unavailable, using defaults:", err);
           }
 
-          const count = SERVICES.length;
+          // Keep the booking form's dropdown in sync with the same service list
+          syncBookingServiceOptions(ALL_SERVICES);
+
           const ITEM_HEIGHT = window.innerWidth <= 768 ? 44 : 58;
           const AUTOPLAY_MS = 3000;
+          const CATEGORY_ICONS = {
+            Cleaning: "cleaning_services",
+            Installation: "construction",
+          };
 
+          // Categories in the order they first appear in the service list
+          const CATEGORIES = [];
+          ALL_SERVICES.forEach((service) => {
+            const category = service.category || "Cleaning";
+            if (!CATEGORIES.includes(category)) CATEGORIES.push(category);
+          });
+
+          let services = [];
+          let chips = [];
+          let cards = [];
+          let count = 0;
           let step = 0;
           let isPaused = false;
-          let autoplayInterval = null;
 
           const wrap = (min, max, v) => {
             const range = max - min;
-            return (((v - min) % range) + range) % range + min;
+            return ((((v - min) % range) + range) % range) + min;
           };
 
           const currentIndex = () => ((step % count) + count) % count;
 
-          // Build chips
-          const chips = SERVICES.map((service, index) => {
+          function buildChip(service, index) {
             const chip = document.createElement("button");
             chip.type = "button";
             chip.className = "fc-chip";
@@ -2145,10 +2270,9 @@
             chip.addEventListener("mouseleave", () => (isPaused = false));
             chipStack.appendChild(chip);
             return chip;
-          });
+          }
 
-          // Build cards
-          const cards = SERVICES.map((service) => {
+          function buildCard(service) {
             const card = document.createElement("div");
             card.className = "fc-card";
             card.style.setProperty("--fc-glow", service.gradient);
@@ -2159,7 +2283,7 @@
             inner.innerHTML =
               '<div class="fc-card-icon"><span class="material-symbols-outlined">' +
               service.icon +
-              '</span></div>' +
+              "</span></div>" +
               '<div class="fc-card-badge">' +
               '<span class="material-symbols-outlined" style="font-size:12px">verified</span>' +
               service.label +
@@ -2183,16 +2307,18 @@
               service.cta +
               "</button>" +
               "</div>";
-            inner
-              .querySelector(".fc-card-cta")
-              .addEventListener(
-                "click",
-                () => (window.location.href = "#book"),
+            inner.querySelector(".fc-card-cta").addEventListener("click", () => {
+              // Preselect whichever service the visitor was looking at
+              const select = document.querySelector(
+                '#booking-form select[name="service"]',
               );
+              if (select) select.value = service.label;
+              window.location.href = "#book";
+            });
             card.appendChild(inner);
             cardStack.appendChild(card);
             return card;
-          });
+          }
 
           function render() {
             const idx = currentIndex();
@@ -2260,10 +2386,60 @@
             render();
           }
 
-          render();
+          function showCategory(category) {
+            const next = ALL_SERVICES.filter(
+              (service) => (service.category || "Cleaning") === category,
+            );
+            if (!next.length) return;
 
-          autoplayInterval = setInterval(() => {
-            if (!isPaused) nextStep();
+            services = next;
+            count = services.length;
+            step = 0;
+            chipStack.innerHTML = "";
+            cardStack.innerHTML = "";
+            chips = services.map(buildChip);
+            cards = services.map(buildCard);
+
+            if (tabsWrap) {
+              tabsWrap.querySelectorAll(".fc-category-tab").forEach((tab) => {
+                const isActive = tab.dataset.category === category;
+                tab.classList.toggle("active", isActive);
+                tab.setAttribute("aria-selected", isActive ? "true" : "false");
+              });
+            }
+
+            render();
+          }
+
+          // Category tabs, hidden when every service sits in one category
+          const tabsWrap = document.getElementById("fc-category-tabs");
+          if (tabsWrap && CATEGORIES.length > 1) {
+            CATEGORIES.forEach((category) => {
+              const total = ALL_SERVICES.filter(
+                (service) => (service.category || "Cleaning") === category,
+              ).length;
+              const tab = document.createElement("button");
+              tab.type = "button";
+              tab.className = "fc-category-tab";
+              tab.dataset.category = category;
+              tab.setAttribute("role", "tab");
+              tab.innerHTML =
+                '<span class="material-symbols-outlined">' +
+                (CATEGORY_ICONS[category] || "design_services") +
+                "</span>" +
+                category +
+                '<span class="fc-tab-count">' +
+                total +
+                "</span>";
+              tab.addEventListener("click", () => showCategory(category));
+              tabsWrap.appendChild(tab);
+            });
+          }
+
+          showCategory(CATEGORIES[0]);
+
+          setInterval(() => {
+            if (!isPaused && count > 1) nextStep();
           }, AUTOPLAY_MS);
         })();
 
@@ -3049,10 +3225,17 @@
             <p
               class="text-sm md:text-base text-on-surface-variant max-w-2xl mx-auto"
             >
-              Precision-engineered cleaning services, backed by certified
-              technicians and transparent pricing.
+              Precision-engineered cleaning and installation services, backed by
+              certified technicians and transparent pricing.
             </p>
           </div>
+          <!-- Category tabs -->
+          <div
+            id="fc-category-tabs"
+            class="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-6 md:mb-8 reveal"
+            role="tablist"
+            aria-label="Service categories"
+          ></div>
           <div
             id="feature-carousel"
             class="relative overflow-hidden rounded-[2rem] lg:rounded-[3rem] flex flex-col lg:flex-row min-h-[600px] lg:min-h-[560px] border border-outline-variant/40 reveal"
@@ -3581,6 +3764,7 @@
                         class="form-input input-glow w-full bg-white/50 border-none focus:ring-2 focus:ring-primary-container rounded-xl p-3 md:p-4 transition-all text-sm md:text-base"
                       >
                         <option value="">Select a service...</option>
+                        <optgroup label="Cleaning">
                         <option value="Air Duct Cleaning">
                           Air Duct Cleaning
                         </option>
@@ -3599,15 +3783,18 @@
                         <option value="Chimney Cleaning">
                           Chimney Cleaning
                         </option>
-                        <option value="Air Duct System Installation">
-                          Air Duct System Installation
-                        </option>
-                        <option value="AC System Installation">
-                          AC System Installation
-                        </option>
-                        <option value="Custom Solutions">
-                          Custom Solutions
-                        </option>
+                        </optgroup>
+                        <optgroup label="Installation">
+                          <option value="HVAC System Installation">
+                            HVAC System Installation
+                          </option>
+                          <option value="AC System Installation">
+                            AC System Installation
+                          </option>
+                          <option value="Custom Solutions">
+                            Custom Solutions
+                          </option>
+                        </optgroup>
                       </select>
                     </div>
                   </div>
