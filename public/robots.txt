@@ -4,4 +4,4 @@ Disallow: /confrimBooking.html
 Disallow: /paid_invoice.html
 Disallow: /service_completion.html
 
-Sitemap: https://duct-cleaning-six.vercel.app/sitemap.xml
+Sitemap: https://pacificductpros.com/sitemap.xml
