@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Two pages were designed with larger corner radii than Tailwind's defaults,
+   which the rest of the site uses. Scope their values to those pages so one
+   stylesheet can serve every page. */
+@layer utilities {
+  .home .rounded-lg,
+  .invoice .rounded-lg {
+    border-radius: 12px;
+  }
+
+  .home .rounded-xl {
+    border-radius: 16px;
+  }
+}

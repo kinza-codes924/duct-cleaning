@@ -17,33 +17,8 @@
     <meta name="twitter:title" content="FAQ | Pacific Duct Systems"/>
     <meta name="twitter:description" content="Answers to common questions about air duct cleaning, pricing, scheduling and what to expect from a Pacific Duct Systems visit."/>
     <meta name="twitter:image" content="https://duct-cleaning-six.vercel.app/pacific_logo_without_bg.png"/>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <script id="tailwind-config">
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              surface: "#fcf9f8",
-              primary: "#001e40",
-              "primary-container": "#003366",
-              "on-primary": "#ffffff",
-              "on-surface": "#1c1b1b",
-              "on-surface-variant": "#43474f",
-              "surface-container": "#f0edec",
-              "surface-container-high": "#ebe7e7",
-              "outline-variant": "#c3c6d1",
-              outline: "#737780",
-              tertiary: "#002326",
-              "tertiary-container": "#003a3e",
-              "on-tertiary-container": "#1facb6",
-            },
-            fontFamily: { sans: ["Inter", "sans-serif"] },
-          },
-        },
-      };
-    </script>
     <style>
       body { font-family: "Inter", sans-serif; background: #fcf9f8; color: #1c1b1b; }
       .faq-item .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), padding 0.3s ease; }
@@ -55,7 +30,9 @@
       header { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
       header.scrolled { box-shadow: 0 4px 20px rgba(0,30,64,0.1); background: rgba(255,255,255,0.95); }
     </style>
-  </head>
+      <!-- Tailwind must stay last in <head>: it overrides the font and inline styles above -->
+    <link rel="stylesheet" href="tailwind.css"/>
+</head>
   <body class="min-h-screen flex flex-col">
 
     <!-- Header -->

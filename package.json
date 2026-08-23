@@ -4,9 +4,16 @@
   "scripts": {
     "dev": "node api/index.js",
     "start": "node api/index.js",
-    "setup": "npm install --prefix api"
+    "setup": "npm install --prefix api",
+    "build:css": "tailwindcss -i src/tailwind.css -o public/tailwind.css --minify",
+    "watch:css": "tailwindcss -i src/tailwind.css -o public/tailwind.css --watch"
   },
   "dependencies": {
     "mongodb": "^7.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.11",
+    "tailwindcss": "^3.4.19"
   }
 }

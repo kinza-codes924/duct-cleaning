@@ -17,33 +17,8 @@
     <meta name="twitter:title" content="Terms of Service | Pacific Duct Systems"/>
     <meta name="twitter:description" content="The terms that apply when you book air duct cleaning or installation services with Pacific Duct Systems."/>
     <meta name="twitter:image" content="https://duct-cleaning-six.vercel.app/pacific_logo_without_bg.png"/>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              surface: "#fcf9f8",
-              primary: "#001e40",
-              "primary-container": "#003366",
-              secondary: "#4d6265",
-              tertiary: "#002326",
-              "on-primary": "#ffffff",
-              "on-surface": "#1c1b1b",
-              "surface-container": "#f0edec",
-              "surface-container-high": "#ebe7e7",
-              outline: "#737780",
-              "outline-variant": "#c3c6d1",
-              "on-tertiary-container": "#1facb6",
-            },
-            fontFamily: { sans: ["Inter"] },
-          },
-        },
-      };
-    </script>
     <style>
       body { font-family: "Inter", sans-serif; }
       .glass-card {
@@ -92,7 +67,9 @@
         outline-offset: 2px;
       }
     </style>
-  </head>
+      <!-- Tailwind must stay last in <head>: it overrides the font and inline styles above -->
+    <link rel="stylesheet" href="tailwind.css"/>
+</head>
   <body class="bg-surface text-on-surface">
 
     <!-- Header -->
