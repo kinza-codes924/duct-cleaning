@@ -1,5 +1,22 @@
 # Pacific Duct Systems - Backend Setup Guide
 
+## ⚠️ After editing any HTML class, rebuild the stylesheet
+
+The site no longer loads Tailwind from a CDN — the pages link a prebuilt
+`public/tailwind.css`, which is what makes them render instantly on mobile.
+That file is generated from the classes found in `public/**`, so a class you
+add to the HTML has no styling until you rebuild:
+
+```bash
+npm run build:css
+```
+
+Use `npm run watch:css` while editing to rebuild automatically. The theme
+(colours, spacing, fonts) lives in `tailwind.config.js`, and the built file is
+committed so Vercel can serve it without a build step.
+
+---
+
 ## 📋 Prerequisites
 
 - Node.js (v14 or higher) installed
