@@ -11,6 +11,7 @@ const Booking = require('./models/Booking');
 const Admin = require('./models/Admin');
 const Content = require('./models/Content');
 const { requireAdmin, JWT_SECRET } = require('./middleware/auth');
+const { escape, detailRows, button, highlight, shell } = require('./emails');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -132,6 +133,13 @@ const transporter = nodemailer.createTransport(
 // Mailboxes reject a From address they do not own, so this must stay the
 // authenticated account. The name is what the customer sees in their inbox.
 const MAIL_FROM = process.env.EMAIL_FROM || `"Pacific Duct Systems" <${process.env.EMAIL_USER}>`;
+
+// Shown in the footer of every email we send.
+const CONTACT_EMAIL = process.env.CONTACT_EMAIL || process.env.EMAIL_USER;
+const CONTACT_PHONE = process.env.CONTACT_PHONE || '(469) 898-9044';
+
+// Absolute links can only be built when we know where the site lives.
+const siteBaseUrl = () => allowedOrigins[0] || '';
 
 // Check the mailbox credentials on startup locally. Skipped on Vercel, where
 // this would open an SMTP connection on every cold start.
@@ -321,134 +329,57 @@ app.post('/api/submit-booking', async (req, res) => {
     const fullAddress = `${address}, ${city}, ${state} ${zipCode}`;
 
     // Email content for admin
+    const bookingLink = siteBaseUrl() ? `${siteBaseUrl()}/confrimBooking.html?id=${savedBooking._id}` : '';
     const adminMailOptions = {
       from: MAIL_FROM,
       to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
-      subject: '🎯 New Booking Request - Pacific Duct Systems',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #003366 0%, #001e40 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-            .field { margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #003366; }
-            .label { font-weight: bold; color: #003366; margin-bottom: 5px; }
-            .value { color: #555; }
-            .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-            .booking-id { background: #1facb6; color: white; padding: 10px; border-radius: 5px; text-align: center; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🎯 New Booking Request</h1>
-              <p>Pacific Duct Systems</p>
-            </div>
-            <div class="content">
-              <div class="booking-id">
-                <strong>Booking ID:</strong> ${savedBooking._id}
-              </div>
-              <div class="field">
-                <div class="label">👤 Customer Name:</div>
-                <div class="value">${name}</div>
-              </div>
-              <div class="field">
-                <div class="label">🛠️ Service Requested:</div>
-                <div class="value">${service}</div>
-              </div>
-              <div class="field">
-                <div class="label">📧 Email:</div>
-                <div class="value"><a href="mailto:${email}">${email}</a></div>
-              </div>
-              <div class="field">
-                <div class="label">📱 Phone:</div>
-                <div class="value"><a href="tel:${phone}">${phone}</a></div>
-              </div>
-              <div class="field">
-                <div class="label">📍 Service Address:</div>
-                <div class="value">
-                  ${address}<br>
-                  ${city}, ${state} ${zipCode}
-                </div>
-              </div>
-              ${message ? `
-              <div class="field">
-                <div class="label">💬 Additional Message:</div>
-                <div class="value">${message}</div>
-              </div>
-              ` : ''}
-              <div class="footer">
-                <p>Received on ${new Date().toLocaleString()}</p>
-                <p>Status: <strong>Pending</strong></p>
-                <p>Pacific Duct Systems - Elite Air Purification</p>
-              </div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `
+      subject: `New booking: ${service} - ${name}`,
+      html: shell({
+        title: 'New Booking Request',
+        intro: `<strong>${escape(name)}</strong> has requested <strong>${escape(service)}</strong>.`,
+        body:
+          `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">` +
+          detailRows([
+            ['Customer', escape(name)],
+            ['Service', escape(service)],
+            ['Email', `<a href="mailto:${escape(email)}" style="color:#003366;">${escape(email)}</a>`],
+            ['Phone', `<a href="tel:${escape(phone)}" style="color:#003366;">${escape(phone)}</a>`],
+            ['Service address', `${escape(address)}<br>${escape(city)}, ${escape(state)} ${escape(zipCode)}`],
+            ['Customer note', message ? escape(message) : ''],
+            ['Booking ID', escape(savedBooking._id)],
+            ['Received', escape(new Date().toLocaleString('en-US'))],
+          ]) +
+          `</table>` +
+          button(bookingLink, 'Open Booking') +
+          `<p style="margin:18px 0 0;font-size:14px;color:#6b7280;">Status is <strong>Pending</strong> until you schedule the visit.</p>`,
+        contactEmail: CONTACT_EMAIL,
+        contactPhone: CONTACT_PHONE,
+      })
     };
 
     // Email content for customer (confirmation)
     const customerMailOptions = {
       from: MAIL_FROM,
       to: email,
-      subject: '📋 Booking Received - Pacific Duct Systems',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #003366 0%, #001e40 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-            .message { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-            .button { display: inline-block; padding: 12px 30px; background: #003366; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
-            .booking-ref { background: #1facb6; color: white; padding: 10px; border-radius: 5px; text-align: center; margin: 20px 0; font-size: 14px; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>📋 Booking Received!</h1>
-              <p>Thank you for choosing Pacific Duct Systems</p>
-            </div>
-            <div class="content">
-              <div class="booking-ref">
-                <strong>Your Booking Reference:</strong><br>
-                ${savedBooking._id}
-              </div>
-              <div class="message">
-                <h2>Hello ${name},</h2>
-                <p>Thank you for your booking request! We've received your information and our team is reviewing it now.</p>
-
-                <h3>Your Booking Details:</h3>
-                <p><strong>Service:</strong> ${service}</p>
-                <p><strong>Service Address:</strong><br>
-                ${address}<br>
-                ${city}, ${state} ${zipCode}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Phone:</strong> ${phone}</p>
-                ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
-
-                <p><strong>What's next?</strong> We'll send you a follow-up email with your confirmed visit date and further details shortly.</p>
-
-                <p>If you have any urgent questions, please don't hesitate to contact us directly.</p>
-              </div>
-              <div class="footer">
-                <p>Pacific Duct Systems - Elite Air Purification</p>
-                <p>Hospital-grade duct sanitization for sophisticated living spaces</p>
-              </div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `
+      subject: 'We received your booking - Pacific Duct Systems',
+      html: shell({
+        title: 'Booking Received',
+        intro: `Hello ${escape(name)}, thank you for choosing Pacific Duct Systems. We have your request and are reviewing it now.`,
+        body:
+          `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">` +
+          detailRows([
+            ['Service', escape(service)],
+            ['Service address', `${escape(address)}<br>${escape(city)}, ${escape(state)} ${escape(zipCode)}`],
+            ['Phone', escape(phone)],
+            ['Your note', message ? escape(message) : ''],
+            ['Booking reference', escape(savedBooking._id)],
+          ]) +
+          `</table>` +
+          button(bookingLink, 'View Your Booking') +
+          `<p style="margin:22px 0 0;"><strong>What happens next:</strong> we will confirm your visit date by email shortly. No payment is taken now.</p>`,
+        contactEmail: CONTACT_EMAIL,
+        contactPhone: CONTACT_PHONE,
+      })
     };
 
     // Send emails (best-effort — a booking is still valid even if email delivery fails,
@@ -550,42 +481,24 @@ app.patch('/api/bookings/:id/schedule', requireAdmin, async (req, res) => {
       await transporter.sendMail({
         from: MAIL_FROM,
         to: booking.email,
-        subject: '📅 Your Visit is Scheduled - Pacific Duct Systems',
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background: linear-gradient(135deg, #003366 0%, #001e40 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-              .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-              .date-badge { background: #1facb6; color: white; padding: 16px; border-radius: 8px; text-align: center; margin: 20px 0; font-size: 18px; font-weight: bold; }
-              .button { display: inline-block; padding: 12px 30px; background: #003366; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
-              .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>📅 Your Visit is Scheduled!</h1>
-                <p>Pacific Duct Systems</p>
-              </div>
-              <div class="content">
-                <p>Hello ${booking.name},</p>
-                <p>Good news — your <strong>${booking.service}</strong> appointment has been confirmed.</p>
-                <div class="date-badge">Our team will arrive on ${formattedDate}</div>
-                <p><strong>Service Address:</strong><br>${booking.address}<br>${booking.city}, ${booking.state} ${booking.zipCode}</p>
-                ${confirmationLink ? `<p style="text-align:center;"><a class="button" href="${confirmationLink}">View Booking Details</a></p>` : ''}
-                <p>If you need to reschedule or have any questions, please contact us directly.</p>
-              </div>
-              <div class="footer">
-                <p>Pacific Duct Systems - Elite Air Purification</p>
-              </div>
-            </div>
-          </body>
-          </html>
-        `
+        subject: 'Your visit is scheduled - Pacific Duct Systems',
+        html: shell({
+          title: 'Your Visit Is Scheduled',
+          intro: `Hello ${escape(booking.name)}, good news \u2014 your <strong>${escape(booking.service)}</strong> appointment is confirmed.`,
+          body:
+            highlight(`Our team will arrive on ${formattedDate}`) +
+            `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">` +
+            detailRows([
+              ['Service', escape(booking.service)],
+              ['Service address', `${escape(booking.address)}<br>${escape(booking.city)}, ${escape(booking.state)} ${escape(booking.zipCode)}`],
+              ['Booking reference', escape(booking._id)],
+            ]) +
+            `</table>` +
+            button(confirmationLink, 'View Booking Details') +
+            `<p style="margin:22px 0 0;">Need to reschedule? Just reply to this email or call us and we will find another time.</p>`,
+          contactEmail: CONTACT_EMAIL,
+          contactPhone: CONTACT_PHONE,
+        })
       });
       console.log('✅ Scheduling email sent to', booking.email);
     } catch (emailError) {
@@ -653,42 +566,24 @@ app.patch('/api/bookings/:id/payment', requireAdmin, async (req, res) => {
         from: MAIL_FROM,
         to: booking.email,
         subject: 'Payment received - Pacific Duct Systems',
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background: linear-gradient(135deg, #003366 0%, #001e40 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-              .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-              .amount-badge { background: #1facb6; color: white; padding: 16px; border-radius: 8px; text-align: center; margin: 20px 0; font-size: 22px; font-weight: bold; }
-              .button { display: inline-block; padding: 12px 30px; background: #003366; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
-              .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>Payment Received</h1>
-                <p>Pacific Duct Systems</p>
-              </div>
-              <div class="content">
-                <p>Hello ${booking.name},</p>
-                <p>Thank you — we have received your payment for <strong>${booking.service}</strong>.</p>
-                <div class="amount-badge">${formattedAmount} paid</div>
-                <p><strong>Payment method:</strong> ${METHOD_LABELS[paymentMethod]}<br>
-                <strong>Service address:</strong><br>${booking.address}<br>${booking.city}, ${booking.state} ${booking.zipCode}</p>
-                ${receiptLink ? `<p style="text-align:center;"><a class="button" href="${receiptLink}">View Your Receipt</a></p>` : ''}
-                <p>Please keep this email for your records. If anything looks wrong, just reply and we will sort it out.</p>
-              </div>
-              <div class="footer">
-                <p>Pacific Duct Systems - Elite Air Purification</p>
-              </div>
-            </div>
-          </body>
-          </html>
-        `
+        html: shell({
+          title: 'Payment Received',
+          intro: `Hello ${escape(booking.name)}, thank you \u2014 we have received your payment for <strong>${escape(booking.service)}</strong>.`,
+          body:
+            highlight(`${formattedAmount} paid`) +
+            `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">` +
+            detailRows([
+              ['Service', escape(booking.service)],
+              ['Payment method', escape(METHOD_LABELS[paymentMethod])],
+              ['Service address', `${escape(booking.address)}<br>${escape(booking.city)}, ${escape(booking.state)} ${escape(booking.zipCode)}`],
+              ['Booking reference', escape(booking._id)],
+            ]) +
+            `</table>` +
+            button(receiptLink, 'View Your Receipt') +
+            `<p style="margin:22px 0 0;">Please keep this email for your records. If anything looks wrong, reply here and we will sort it out.</p>`,
+          contactEmail: CONTACT_EMAIL,
+          contactPhone: CONTACT_PHONE,
+        })
       });
       console.log('✅ Receipt email sent to', booking.email);
     } catch (emailError) {
