@@ -61,8 +61,8 @@
 
   var HTML =
     '<div class="sf-wrap sf-brand">' +
-    '<img src="pacific_logo_without_bg.png" alt="Pacific Duct Systems logo" />' +
-    '<div><p class="sf-brand-name">Pacific Duct Systems</p>' +
+    '<img src="pacific_logo_without_bg.png" alt="Pacific Duct Pros logo" />' +
+    '<div><p class="sf-brand-name">Pacific Duct Pros</p>' +
     '<p class="sf-brand-tag">Hospital-grade air duct cleaning &amp; installation</p></div>' +
     '</div>' +
     '<div class="sf-wrap sf-grid">' +
@@ -85,7 +85,7 @@
     "</div></div>" +
     "</div>" +
     '<div class="sf-wrap sf-bottom">' +
-    "<p>&copy; 2026 Pacific Duct Systems. All rights reserved.</p>" +
+    "<p>&copy; 2026 Pacific Duct Pros. All rights reserved.</p>" +
     '<div class="sf-status"><span class="sf-dot"></span>Now Accepting Bookings</div>' +
     "<p>Remote &amp; On-Site Estimates Available</p>" +
     "</div>" +

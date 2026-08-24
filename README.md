@@ -1,4 +1,4 @@
-# Pacific Duct Systems - Backend Setup Guide
+# Pacific Duct Pros - Backend Setup Guide
 
 ## ⚠️ After editing any HTML class, rebuild the stylesheet
 
@@ -60,15 +60,15 @@ This will install all required packages:
 PORT=3000
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=xxxx xxxx xxxx xxxx  # Your App Password (remove spaces)
-ADMIN_EMAIL=admin@Pacific Duct.com   # Where bookings will be sent
+ADMIN_EMAIL=info@pacificductpros.com   # Where bookings will be sent
 ```
 
 **Example:**
 ```env
 PORT=3000
-EMAIL_USER=Pacific Duct@gmail.com
+EMAIL_USER=info@pacificductpros.com
 EMAIL_PASS=abcdwxyzpqrs1234
-ADMIN_EMAIL=Pacific Duct@gmail.com
+ADMIN_EMAIL=info@pacificductpros.com
 ```
 
 ---
@@ -203,7 +203,7 @@ DuctCleaning/
 ### Option 1: Heroku (Free Tier Available)
 1. Create Heroku account
 2. Install Heroku CLI
-3. Run: `heroku create Pacific Duct-backend`
+3. Run: `heroku create pacific-duct-pros-backend`
 4. Set environment variables in Heroku dashboard
 5. Deploy: `git push heroku main`
 
@@ -250,4 +250,4 @@ If you need help:
 
 ---
 
-**Made with ❤️ for Pacific Duct Systems**
+**Made with ❤️ for Pacific Duct Pros**

@@ -167,7 +167,7 @@ const transporter = nodemailer.createTransport(
 
 // Mailboxes reject a From address they do not own, so this must stay the
 // authenticated account. The name is what the customer sees in their inbox.
-const MAIL_FROM = process.env.EMAIL_FROM || `"Pacific Duct Systems" <${process.env.EMAIL_USER}>`;
+const MAIL_FROM = process.env.EMAIL_FROM || `"Pacific Duct Pros" <${process.env.EMAIL_USER}>`;
 
 // Shown in the footer of every email we send.
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL || process.env.EMAIL_USER;
@@ -396,10 +396,10 @@ app.post('/api/submit-booking', async (req, res) => {
     const customerMailOptions = {
       from: MAIL_FROM,
       to: email,
-      subject: 'We received your booking - Pacific Duct Systems',
+      subject: 'We received your booking - Pacific Duct Pros',
       html: shell({
         title: 'Booking Received',
-        intro: `Hello ${escape(name)}, thank you for choosing Pacific Duct Systems. We have your request and are reviewing it now.`,
+        intro: `Hello ${escape(name)}, thank you for choosing Pacific Duct Pros. We have your request and are reviewing it now.`,
         body:
           `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">` +
           detailRows([
@@ -516,7 +516,7 @@ app.patch('/api/bookings/:id/schedule', requireAdmin, async (req, res) => {
       await transporter.sendMail({
         from: MAIL_FROM,
         to: booking.email,
-        subject: 'Your visit is scheduled - Pacific Duct Systems',
+        subject: 'Your visit is scheduled - Pacific Duct Pros',
         html: shell({
           title: 'Your Visit Is Scheduled',
           intro: `Hello ${escape(booking.name)}, good news \u2014 your <strong>${escape(booking.service)}</strong> appointment is confirmed.`,
@@ -600,7 +600,7 @@ app.patch('/api/bookings/:id/payment', requireAdmin, async (req, res) => {
       await transporter.sendMail({
         from: MAIL_FROM,
         to: booking.email,
-        subject: 'Payment received - Pacific Duct Systems',
+        subject: 'Payment received - Pacific Duct Pros',
         html: shell({
           title: 'Payment Received',
           intro: `Hello ${escape(booking.name)}, thank you \u2014 we have received your payment for <strong>${escape(booking.service)}</strong>.`,

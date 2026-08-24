@@ -85,7 +85,7 @@ function shell({ title, intro, body, contactEmail, contactPhone }) {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#ffffff;border:1px solid ${LINE};border-radius:8px;overflow:hidden;">
           <tr>
             <td bgcolor="${NAVY}" style="padding:30px;font-family:${FONT};">
-              <div style="font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#7df4ff;font-weight:700;">Pacific Duct Systems</div>
+              <div style="font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#7df4ff;font-weight:700;">Pacific Duct Pros</div>
               <div style="font-size:24px;font-weight:700;color:#ffffff;padding-top:8px;line-height:1.3;">${escape(
                 title,
               )}</div>
@@ -99,7 +99,7 @@ function shell({ title, intro, body, contactEmail, contactPhone }) {
           </tr>
           <tr>
             <td style="padding:22px 30px;border-top:1px solid ${LINE};font-family:${FONT};font-size:13px;color:${MUTED};line-height:1.6;">
-              <strong style="color:${INK};">Pacific Duct Systems</strong><br>
+              <strong style="color:${INK};">Pacific Duct Pros</strong><br>
               <a href="mailto:${escape(contactEmail)}" style="color:${MUTED};">${escape(
                 contactEmail,
               )}</a>${

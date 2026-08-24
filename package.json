@@ -1,5 +1,5 @@
 {
-  "name": "pacific-duct-systems",
+  "name": "pacific-duct-pros",
   "private": true,
   "scripts": {
     "dev": "node api/index.js",

@@ -66,9 +66,9 @@ async function main() {
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || `"Pacific Duct Systems" <${user}>`,
+      from: process.env.EMAIL_FROM || `"Pacific Duct Pros" <${user}>`,
       to,
-      subject: 'Pacific Duct Systems — test email',
+      subject: 'Pacific Duct Pros — test email',
       text: 'If you are reading this, the website can send email from this mailbox.',
     });
     console.log('✅ Test email accepted for delivery:', info.messageId);
