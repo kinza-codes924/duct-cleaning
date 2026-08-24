@@ -49,7 +49,9 @@ app.use(
       isAllowedOrigin(origin, req) ? null : new Error('Not allowed by CORS'),
       {
         origin: origin || true,
-        methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+        // Must cover every method the routes below use: the content editor
+        // saves with PUT, and a method missing here fails at the preflight.
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization']
       }
     );
