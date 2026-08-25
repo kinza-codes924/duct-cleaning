@@ -60,9 +60,9 @@
 </div>
 </header>
 <!-- Main Content Grid -->
-<div class="grid grid-cols-12 gap-gutter flex-grow">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter flex-grow">
 <!-- Sidebar: Details -->
-<div class="col-span-4 flex flex-col gap-stack-md">
+<div class="md:col-span-4 flex flex-col gap-stack-md">
 <section>
 <h3 class="font-label-md text-label-md text-primary mb-stack-sm border-b border-secondary-fixed pb-2">Client Information</h3>
 <div class="flex flex-col gap-1">
@@ -86,7 +86,7 @@
 </section>
 </div>
 <!-- Main Panel: Results & Data -->
-<div class="col-span-8 flex flex-col gap-stack-md">
+<div class="md:col-span-8 flex flex-col gap-stack-md">
 <!-- Bento Section: Service Summary -->
 <div class="grid grid-cols-2 gap-gutter">
 <div class="glass-card p-stack-md rounded-xl col-span-2">
@@ -163,10 +163,16 @@
 </div>
 <!-- Footer -->
 <!-- Print FAB -->
-<button class="no-print fixed bottom-10 right-10 airflow-gradient text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-2 hover:scale-105 transition-transform" onclick="window.print()">
+<div class="no-print fixed bottom-10 right-10 flex flex-col gap-3 items-end">
+<button id="email-btn" class="bg-on-tertiary-container text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-2 hover:scale-105 transition-transform" onclick="sendReportEmail()">
+<span class="material-symbols-outlined">email</span>
+<span class="font-label-md">Email to Client</span>
+</button>
+<button class="airflow-gradient text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-2 hover:scale-105 transition-transform" onclick="window.print()">
 <span class="material-symbols-outlined">print</span>
 <span class="font-label-md">Download PDF Report</span>
 </button>
+</div>
 </div>
 <script>
   document.addEventListener('DOMContentLoaded', async () => {
@@ -259,6 +265,40 @@
       setText('report-id', 'Report ID: unable to load booking');
     }
   });
+
+  async function sendReportEmail() {
+    const params = new URLSearchParams(window.location.search);
+    const bookingId = params.get('id');
+    if (!bookingId) return alert('No booking ID found.');
+
+    const API_BASE =
+      location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+        ? 'http://localhost:4000/api'
+        : '/api';
+
+    const btn = document.getElementById('email-btn');
+    const origHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span class="font-label-md">Sending...</span>';
+
+    try {
+      const res = await fetch(`${API_BASE}/bookings/${bookingId}/send-report`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span><span class="font-label-md">Sent!</span>';
+        setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 3000);
+      } else {
+        alert(data.message || 'Failed to send email');
+        btn.innerHTML = origHTML;
+        btn.disabled = false;
+      }
+    } catch (err) {
+      alert('Failed to send email. Please try again.');
+      btn.innerHTML = origHTML;
+      btn.disabled = false;
+    }
+  }
+  window.sendReportEmail = sendReportEmail;
 </script>
 
     <div id="site-footer-mount"></div>

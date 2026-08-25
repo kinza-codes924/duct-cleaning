@@ -277,7 +277,7 @@ app.put('/api/content', requireAdmin, async (req, res) => {
 app.get('/api/bookings/:id/public', async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id).select(
-      'name service address city state zipCode status submittedAt scheduledDate payment'
+      'name service address city state zipCode status submittedAt scheduledDate payment message'
     );
     if (!booking) {
       return res.status(404).json({ success: false, message: 'Booking not found' });
@@ -631,6 +631,58 @@ app.patch('/api/bookings/:id/payment', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error recording payment:', error);
     res.status(500).json({ success: false, message: 'Failed to record payment' });
+  }
+});
+
+// Send the service completion report to the client's email
+app.post('/api/bookings/:id/send-report', async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+    if (!booking.email) {
+      return res.status(400).json({ success: false, message: 'No email address on file for this booking' });
+    }
+
+    const siteUrl = allowedOrigins[0] || '';
+    const reportLink = siteUrl ? `${siteUrl}/service_completion.html?id=${booking._id}` : '';
+    const fullAddress = `${booking.address}, ${booking.city}, ${booking.state} ${booking.zipCode}`;
+
+    const serviceDate = booking.scheduledDate || booking.submittedAt;
+    const formattedDate = serviceDate
+      ? new Date(serviceDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : 'Not yet scheduled';
+
+    await transporter.sendMail({
+      from: MAIL_FROM,
+      to: booking.email,
+      subject: 'Your Service Completion Report - Pacific Duct Pros',
+      html: shell({
+        title: 'Service Completion Report',
+        intro: `Hello ${escape(booking.name)}, here is your service completion report for <strong>${escape(booking.service)}</strong>.`,
+        body:
+          `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">` +
+          detailRows([
+            ['Service', escape(booking.service)],
+            ['Service date', escape(formattedDate)],
+            ['Service address', `${escape(booking.address)}<br>${escape(booking.city)}, ${escape(booking.state)} ${escape(booking.zipCode)}`],
+            ['Notes', booking.message ? escape(booking.message) : ''],
+            ['Booking reference', escape(booking._id)],
+          ]) +
+          `</table>` +
+          button(reportLink, 'View Full Report') +
+          `<p style="margin:22px 0 0;">Thank you for choosing Pacific Duct Pros. We recommend scheduling your next service in 12 months to keep your system running at its best.</p>`,
+        contactEmail: CONTACT_EMAIL,
+        contactPhone: CONTACT_PHONE,
+      })
+    });
+
+    console.log('✅ Service report email sent to', booking.email);
+    res.json({ success: true, message: 'Report sent to ' + booking.email });
+  } catch (error) {
+    console.error('Error sending report email:', error);
+    res.status(500).json({ success: false, message: 'Failed to send report email' });
   }
 });
 
